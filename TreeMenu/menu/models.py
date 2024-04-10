@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class MenuItems(models.Model):
+class MenuItem(models.Model):
     name_item = models.CharField(max_length=200)
     higher_level = models.ForeignKey('self', null=True, blank=True, related_name='lower_level',
                                      on_delete=models.CASCADE)
