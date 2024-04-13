@@ -39,7 +39,7 @@ def draw_menu(id_item: int) -> str:
     return mark_safe(html_code)
 
 
-def get_lower(obj: MenuItem, flag: int, id_obj: Union[int, None] = None, indent: int = 20) -> Dict[str, int]:
+def get_lower(obj: MenuItem, flag: int, id_obj: Union[int, None] = None, indent: int = 5) -> Dict[str, int]:
     """
     Получает нижний уровень меню для заданного пункта.
 
@@ -58,29 +58,36 @@ def get_lower(obj: MenuItem, flag: int, id_obj: Union[int, None] = None, indent:
     for subelement in obj.lower_level.all():
         if ((id_obj is None) or (subelement.id != id_obj)) and flag == 0:
             temp += f"""
-            <p style=\"margin-left: {indent}px;\">
-                <a href='{subelement.url}'>{subelement.name_item}</a>
-            </p>
+            <ul style=\"margin-left: {indent}px;\">
+                <li>
+                    <a href='{subelement.url}'>{subelement.name_item}</a>
+                </li>
+                {get_lower(subelement, flag, id_obj, indent + 2)["temp"]}
+            </ul>
             """
-            temp += get_lower(subelement, flag, id_obj, indent + 20)["temp"]
 
         if flag == 1:
             temp += f"""
-            <p style=\"margin-left: {indent}px;\">
-                <a href='{subelement.url}'>{subelement.name_item}</a>
-            </p>
+            <ul style=\"margin-left: {indent}px;\">
+                <li>
+                    <a href='{subelement.url}'>{subelement.name_item}</a>
+                </li>
+                {get_lower(subelement, flag, id_obj, indent + 2)["temp"]}
+            </ul>
             """
 
         if subelement.id == id_obj:
             flag = True
             temp += f"""
-            <p style=\"margin-left: {indent}px;\">
-                <a href='{subelement.url}'> 
-                <em>{subelement.name_item}</em>
-                </a>
-            </p>
+            <ul style=\"margin-left: {indent}px;\">
+                <li>
+                    <a href='{subelement.url}'> 
+                    <em>{subelement.name_item}</em>
+                    </a>
+                    {get_lower(subelement, flag, indent=indent + 2)["temp"]}
+                </li>
+            </ul>
             """
-            temp += get_lower(subelement, flag, indent=indent + 20)["temp"]
 
         if flag not in [0, 1, 2]:
             print("Error")
