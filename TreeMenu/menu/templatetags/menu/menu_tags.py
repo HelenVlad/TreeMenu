@@ -9,14 +9,15 @@ register = template.Library()
 @register.simple_tag()
 def draw_menu(id_item: int) -> str:
     """
-    Выводит меню с заданным идентификатором.
+    Отрисовывает меню
 
     :param id_item: Идентификатор пункта меню, который должен быть выделен курсивом.
     :type id_item: int
     :return: HTML-код для отображения меню.
     :rtype: str
     """
-    flag = 0
+
+    flag = 0  # id для выделения еще не найден
     all_items_parent = MenuItem.objects.filter(higher_level__isnull=True)
     html_code = "<ul>"
 
@@ -26,12 +27,16 @@ def draw_menu(id_item: int) -> str:
             html_code += f"<a href='{elem.url}'><em>{elem.name_item}</em></a>"
             flag = 1
             id_item = None
-        else:
+            html_code += to_bottom(elem, flag=1)["temp"]
+
+        elif flag == 1:
             html_code += f"<div><a href='{elem.url}'>{elem.name_item}</a></div>"
 
-        result = get_lower(elem, flag, id_item)
-        flag = result["flag"]
-        html_code += result["temp"]
+        elif flag == 0:
+            html_code += f"<div><a href='{elem.url}'>{elem.name_item}</a></div>"
+            result = to_bottom(elem, id_obj=id_item, flag=0)
+            flag = result["flag"]
+            html_code += result["temp"]
 
         html_code += '</li>'
 
@@ -39,8 +44,10 @@ def draw_menu(id_item: int) -> str:
     return mark_safe(html_code)
 
 
-def get_lower(obj: MenuItem, flag: int, id_obj: Union[int, None] = None, indent: int = 5) -> Dict[str, int]:
+def to_bottom(obj: MenuItem, indent: int = 2, id_obj: Union[int, None] = None, flag: Union[int, None] = None) -> Dict[
+    str, int]:
     """
+
     Получает нижний уровень меню для заданного пункта.
 
     :param obj: Объект пункта меню.
@@ -55,42 +62,38 @@ def get_lower(obj: MenuItem, flag: int, id_obj: Union[int, None] = None, indent:
     :rtype: dict
     """
     temp = ""
+    local_flag = flag
     for subelement in obj.lower_level.all():
-        if ((id_obj is None) or (subelement.id != id_obj)) and flag == 0:
+        design = f"<a href='{subelement.url}'>{subelement.name_item}</a>"
+        if local_flag == 0:
+
+            if id_obj:
+                if subelement.id == id_obj:
+                    design = f"<a href='{subelement.url}'><em>{subelement.name_item}</em></a>"
+                    local_flag = 1
+                    id_obj = None
+
+            result = to_bottom(subelement, indent + 2, id_obj=id_obj, flag=local_flag)
             temp += f"""
-            <ul style=\"margin-left: {indent}px;\">
-                <li>
-                    <a href='{subelement.url}'>{subelement.name_item}</a>
-                </li>
-                {get_lower(subelement, flag, id_obj, indent + 2)["temp"]}
-            </ul>
-            """
+               <ul style=\"margin-left: {indent}px;\">
+                   <li>
+                       {design}
+                   </li>
+                   {result["temp"]}
+               </ul>
+               """
+            local_flag = result["flag"] if local_flag != 1 else local_flag
 
-        if flag == 1:
+        elif local_flag == 1:
             temp += f"""
-            <ul style=\"margin-left: {indent}px;\">
-                <li>
-                    <a href='{subelement.url}'>{subelement.name_item}</a>
-                </li>
-                {get_lower(subelement, flag, id_obj, indent + 2)["temp"]}
-            </ul>
-            """
+               <ul style=\"margin-left: {indent}px;\">
+                   <li>
+                       {design}
+                   </li>
+               </ul>
+               """
 
-        if subelement.id == id_obj:
-            flag = True
-            temp += f"""
-            <ul style=\"margin-left: {indent}px;\">
-                <li>
-                    <a href='{subelement.url}'> 
-                    <em>{subelement.name_item}</em>
-                    </a>
-                    {get_lower(subelement, flag, indent=indent + 2)["temp"]}
-                </li>
-            </ul>
-            """
+        if local_flag not in [0, 1]:
+            temp += "Error"
 
-        if flag not in [0, 1, 2]:
-            print("Error")
-
-    flag = 2 if flag == 1 else flag
-    return {"temp": temp, "flag": flag}
+    return {"temp": temp, "flag": local_flag}

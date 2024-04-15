@@ -9,7 +9,7 @@
 
 1. Клонируйте репозиторий и перейдите в него в командной строке:
 
-git clone https://github.com/*
+git clone https://github.com/HelenVlad/TreeMenu.git
 
 2. Установите и активируйте виртуальное окружение
 
