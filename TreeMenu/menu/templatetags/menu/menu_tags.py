@@ -16,9 +16,11 @@ def draw_menu(id_item: int) -> str:
     :return: HTML-код для отображения меню.
     :rtype: str
     """
+    all_items_parent = MenuItem.objects.filter(higher_level__isnull=True)
+    if not all_items_parent.exists():
+        return "Страница в разработке."
 
     flag = 0  # id для выделения еще не найден
-    all_items_parent = MenuItem.objects.filter(higher_level__isnull=True)
     html_code = "<ul>"
 
     for elem in all_items_parent:
