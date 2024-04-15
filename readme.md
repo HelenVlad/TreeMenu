@@ -16,7 +16,11 @@ git clone https://github.com/HelenVlad/TreeMenu.git
 
 python -m venv venv
 
+  Для Unix-подобных систем:
 source venv/Scripts/activate
+
+  Для Windows:
+venv\Scripts\activate
 
 3. Установите необходимые зависимости с помощью команды:
 
