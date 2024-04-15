@@ -5,11 +5,14 @@
 <head>
     <meta charset="utf-8" />
     <title>Меню</title>
-
 </head>
 <body>
 
-{% draw_menu main_menu %}
+{% if main_menu %}
+    {% draw_menu main_menu %}
+{% else %}
+    <p>Страница в разработке.</p>
+{% endif %}
 
 </body>
 </html>
